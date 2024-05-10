@@ -1,0 +1,294 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2759
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 TimesNewRomanPSMT;\f1\froman\fcharset0 Times-Roman;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 *#
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 #robot states
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const TARGET = 300\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const STOPPED = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const LEFT = 1
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const RIGHT = 2
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const BLOCKED = 3
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const CORRECT = 4
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const EDGE = 400
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const THRESHOLD = 2000
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 const CLOSE_THRESHOLD = 3000
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 var state = STOPPED
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 var max
+\f1\fs24 \
+\
+
+\f0\fs29\fsmilli14667 onevent button.forward # start movement on button forward
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	motor.left.target = TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	motor.right.target = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	state = RIGHT
+\f1\fs24 \
+\
+
+\f0\fs29\fsmilli14667 onevent button.backward # stop movement on button back
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	motor.left.target = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	motor.right.target = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	state = STOPPED
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	timer.period[0] = 0
+\f1\fs24 \
+\
+
+\f0\fs29\fsmilli14667 onevent prox\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	call math.stat(prox.horizontal[0:4], 0, max, 0)
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	if state != STOPPED then
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		#robot finds the line again
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		if state == BLOCKED and (prox.ground.delta[0] < EDGE or prox.ground.delta[1] < EDGE) then
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			state = CORRECT
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.left.target= TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.right.target = TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			timer.period[0] = 300
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		end
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	#if moving left and not sensing line on left sensor
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		if state == LEFT and prox.ground.delta[0] >= EDGE then
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			state = RIGHT
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.left.target=TARGET\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.right.target = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			timer.period[0] = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		end
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	#if moving right and not sensing line on right sensor
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		if state == RIGHT and prox.ground.delta[1] >= EDGE\'a0 then
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			state = LEFT\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.left.target = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.right.target = TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			timer.period[0] = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		end
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		#if too close the robot will back up
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		if max > CLOSE_THRESHOLD then
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			state = BLOCKED
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.left.target = -TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.right.target = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			timer.period[0] = 200
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			timer.period[1] = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		elseif max > THRESHOLD then\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			state = BLOCKED
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.left.target = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			motor.right.target = TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 			timer.period[0] = 200
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		end
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	end
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 onevent timer0
+\f1\fs24 \
+\
+
+\f0\fs29\fsmilli14667 	#Extra correction for getting onto the line
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	if state == CORRECT then
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		motor.left.target = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		motor.right.target = TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		timer.period[1] = 200
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		timer.period[0] = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	#after not sensing a block, it will go straight for a bit
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	else
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		motor.left.target = TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		motor.right.target = TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		timer.period[1] = 1000
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	end
+\f1\fs24 \
+\
+
+\f0\fs29\fsmilli14667 onevent timer1
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	timer.period[1] = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	timer.period[0] = 0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	#resets to left state
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	if state == CORRECT then
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		state = LEFT
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	#if no block has been seen for a while
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	else
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		motor.left.target = TARGET
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 		motor.right.target = -TARGET * 2 / 3
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 	end
+\f1\fs24 \
+\
+}
